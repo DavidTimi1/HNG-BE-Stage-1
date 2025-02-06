@@ -21,8 +21,10 @@ def is_perfect(n):
 def get_properties(n):
     properties = []
 
-    # exclude negative numbers
-    if n >= 0 and sum(int(digit) ** len(str(n)) for digit in str(n)) == n:
+    # exclude the negative sign
+    n = abs(n)
+
+    if sum(int(digit) ** len(str(n)) for digit in str(n)) == abs(n):
         properties.append("armstrong")
 
     if n % 2 == 0:
@@ -60,7 +62,7 @@ def classify_number():
         "is_prime": is_prime(number),
         "is_perfect": is_perfect(number),
         "properties": get_properties(number),
-        "digit_sum": sum(int(digit) if digit != "-" else 0 for digit in str(number)),
+        "digit_sum": sum(int(digit) for digit in str(abs(number))),
         "fun_fact": fun_fact
     }
 
