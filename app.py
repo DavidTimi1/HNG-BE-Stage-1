@@ -20,47 +20,51 @@ def is_perfect(n):
 
 def get_properties(n):
     properties = []
-    if sum(int(digit) ** len(str(n)) for digit in str(n)) == n:
+
+    # exclude negative numbers
+    if n >= 0 and sum(int(digit) ** len(str(n)) for digit in str(n)) == n:
         properties.append("armstrong")
+
     if n % 2 == 0:
         properties.append("even")
     else:
         properties.append("odd")
+
     return properties
 
 
 @app.route('/api/classify-number', methods=['GET'])
 def classify_number():
+    number = request.args.get('number')
+
     try:
-        number = request.args.get('number', type=int)
-        
-        if number is None:
-            return jsonify({
-                "number": "alphabet",
-                "error": True
-            }), 400
+        number = int(number)
 
-        # Fetch a fun fact from Numbers API
-        response = requests.get(f"http://numbersapi.com/{number}/math?json")
-        if response.status_code == 200:
-            fun_fact = response.json().get("text", "No fun fact available.")
-        else:
-            fun_fact = "No fun fact available."
+    except ValueError:
+        return jsonify({
+            "number": request.args.get('number'),
+            "error": True
+        }), 400
+    
 
-        # Generate the response
-        result = {
-            "number": number,
-            "is_prime": is_prime(number),
-            "is_perfect": is_perfect(number),
-            "properties": get_properties(number),
-            "digit_sum": sum(int(digit) for digit in str(number)),
-            "fun_fact": fun_fact
-        }
+    # Fetch a fun fact from Numbers API
+    response = requests.get(f"http://numbersapi.com/{number}/math?json")
+    if response.status_code == 200:
+        fun_fact = response.json().get("text", "No fun fact available.")
+    else:
+        fun_fact = "No fun fact available."
 
-        return jsonify(result), 200
+    # Generate the response
+    result = {
+        "number": number,
+        "is_prime": is_prime(number),
+        "is_perfect": is_perfect(number),
+        "properties": get_properties(number),
+        "digit_sum": sum(int(digit) if digit != "-" else 0 for digit in str(number)),
+        "fun_fact": fun_fact
+    }
 
-    except Exception as e:
-        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    return jsonify(result), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
